@@ -51,7 +51,14 @@ public class Main {
                     repo.status();
                     break;
                 case "checkout":
-                    if (args.length == 2) {
+                    int len = args.length;
+                    for (int i = 0; i < args.length; i++) {
+                        if (args[i].equals("--")) {
+                            System.arraycopy(args, i + 1, args, i, args.length - i - 1);
+                            len -= 1;
+                        }
+                    }
+                    if (len == 2) {
                         repo.checkout(args[1]);
                     } else {
                         repo.checkout(args[1], args[2]);

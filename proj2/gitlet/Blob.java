@@ -1,23 +1,24 @@
 package gitlet;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 
 public class Blob implements Serializable {
-    private int version;
-    private File file;
-    private String sha1;
+    int version;
+    File file;
+    String sha1;
     private int hashCode = 0;
-    private boolean isDeleteBlob = false;
+    public transient byte[] data;
 
     public Blob(int version, File file, byte[] data) {
         this.version = version;
         this.file = file;
+        this.data = data;
         if (data != null)
             sha1 = Utils.sha1(file.getAbsolutePath(), (Object) data);
         else
             sha1 = Utils.sha1(file.getAbsolutePath());
-        if (data == null) isDeleteBlob = true;
     }
 
     public int getVersion() { return version;}
@@ -34,10 +35,35 @@ public class Blob implements Serializable {
         return hashCode;
     }
 
-    public boolean isDeleteBlob() { return isDeleteBlob; }
-
     public String toString(){
         return file.getName() + " (" + version + ") " + getHash().substring(0, 4);
     }
 
+    public void save() {
+        Utils.writeContents(getBlobFile(), (Object) data);
+    }
+
+    public File getFolder(){
+        return Utils.join(BlobContainer.BASE, sha1.substring(0, 2));
+    }
+
+    public File getBlobFile(){
+        return Utils.join(getFolder(), sha1);
+    }
+
+    public byte[] getContents(){
+        return (data == null) ? Utils.readContents(getBlobFile()) : data;
+    }
+
+    public void recoverFile(){
+        data = getContents();
+        if (!file.exists()){
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        Utils.writeContents(file, (Object)data);
+    }
 }

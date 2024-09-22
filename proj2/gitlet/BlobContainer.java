@@ -1,5 +1,6 @@
 package gitlet;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.io.File;
 
@@ -15,23 +16,18 @@ public class BlobContainer {
         this.blobs = blobs;
     }
 
-    public void add(Blob blob, byte[] data) {
+    public void add(Blob blob) {
         blobs.add(blob);
-        String sha1 = blob.getHash();
-        File storeFolder = Utils.join(BASE, sha1.substring(0, 2));
+        File storeFolder = blob.getFolder();
         storeFolder.mkdirs();
-        File file = Utils.join(storeFolder, sha1);
-        if (data != null)
-            Utils.writeContents(file, (Object) data);
-        else Utils.writeContents(file, "removed");
+        blob.save();
     }
 
     public void remove(Blob blob) {
         blobs.remove(blob);
-        String sha1 = blob.getHash();
-        File storeFolder = Utils.join(BASE, sha1.substring(0, 2));
+        File storeFolder = blob.getFolder();
         if (!storeFolder.exists()) throw new GitletException("Could not find store folder");
-        File file = Utils.join(storeFolder, sha1);
+        File file = blob.getFile();
         if (!file.delete()) throw new GitletException("Could not delete store file");
     }
 
@@ -39,18 +35,18 @@ public class BlobContainer {
         return blobs;
     }
 
-    public byte[] getContents(Blob blob) {
-        return Utils.readContents(new File(getFolder(blob), blob.getHash()));
-    }
-
     public String getContentsAsString(Blob blob) {
-        return Utils.readContentsAsString(new File(getFolder(blob), blob.getHash()));
-
-    }
-    private File getFolder(Blob blob){
-        File storeFolder = Utils.join(BASE, blob.getHash().substring(0, 2));
-        if (!storeFolder.exists()) throw new GitletException("Could not find store folder");
-        return storeFolder;
+        return new String(blob.getContents(), StandardCharsets.UTF_8);
     }
 
+    public Blob createNewBlob(File file, Commit head){
+        if (!Repository.differs(head, file)) return null;
+        if (!file.exists()) throw new GitletException("File " + file + " does not exist");
+        int maxVersion = 0;
+        for (Blob blob : blobs) {
+            if (blob.getVersion() > maxVersion) maxVersion = blob.getVersion();
+        }
+        maxVersion++;
+        return new Blob(maxVersion, file, Utils.readContents(file));
+    }
 }

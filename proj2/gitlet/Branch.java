@@ -6,7 +6,7 @@ public class Branch implements Serializable{
     public String name;
     public Commit head;
     public Commit start;
-    public boolean active;
+    public boolean isCurrentBranch;
     public Branch(String name, Commit head) {
         this.name = name;
         this.head = head;
@@ -14,7 +14,7 @@ public class Branch implements Serializable{
     }
 
     public void printBranch(){
-        if (active) System.out.print("*");
+        if (isCurrentBranch) System.out.print("*");
         System.out.println(name);
     }
 }

@@ -35,7 +35,7 @@ public class Commit implements Serializable {
     protected int hashCode = 0;
     protected String SHA1 = null;
     protected Branch branch;
-    public static DateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.ENGLISH);
+    public static DateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.ENGLISH);
 
     /* TODO: fill in the rest of this class. */
     public Commit(String message, String author, Date commitDate, Commit parent, Branch branch) {
@@ -61,7 +61,8 @@ public class Commit implements Serializable {
     }
 
     public boolean contains(File file){
-        return files.containsKey(file);
+        Blob b = getBlob(file);
+        return b != null && !(b instanceof RemoveBlob);
     }
 
     public String getHash(){

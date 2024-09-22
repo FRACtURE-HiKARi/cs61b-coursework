@@ -25,7 +25,7 @@ public class Repository{
     public Commit head;
     public Set<Commit> commits;
     public BlobContainer blobs;
-    public Set<File> stagedFiles;
+    public Map<File, FileStatus> stagedFiles;
     public Set<Branch> branches;
     public Branch currentBranch;
     private byte[] cachedData;
@@ -45,7 +45,7 @@ public class Repository{
         } else {
             commits = new HashSet<>();
             blobs = new BlobContainer();
-            stagedFiles = new HashSet<>();
+            stagedFiles = new HashMap<>();
             branches = new HashSet<>();
             head = null;
             currentBranch = null;
@@ -81,7 +81,7 @@ public class Repository{
                 throw new GitletException("Unable to create directory " + BLOB_DIR);
 
             // TODO: solve Linux Start timestamp
-            makeCommit("Initial commit.", "initial commit", new Date((long) 0));
+            makeCommit("initial commit", "initial commit", new Date((long) 0));
             branch("master");
             head.branch = currentBranch;
         } else {
@@ -97,36 +97,35 @@ public class Repository{
     }
 
     private void switchBranchStatus(Branch b){
-        if(currentBranch != null) currentBranch.active = false;
+        if(currentBranch != null) currentBranch.isCurrentBranch = false;
         currentBranch = b;
-        currentBranch.active = true;
+        currentBranch.isCurrentBranch = true;
     }
 
     public void makeMergeCommit(String message, String author, Commit mergedParent){
         updateHead(new MergedCommit(message, author, new Date(), head, mergedParent, currentBranch));
-        updateFilesHead();
+        applyStagedFiles();
     }
 
     private void makeCommit(String message, String author, Date date){
         updateHead(new Commit(message, author, date, head, currentBranch));
-        updateFilesHead();
+        applyStagedFiles();
     }
 
     public void makeCommit(String message, String author){
         makeCommit(message, author, new Date());
     }
 
-    private void updateFilesHead(){
-        Status status = new Status(this);
-        for (File file: stagedFiles){
+    private void applyStagedFiles(){
+        for (File file: stagedFiles.keySet()){
             Blob blob = null;
             cachedData = null;
-            if (status.removedFile.contains(file)){
-                blob = new Blob(-1, file, null);
+            if (stagedFiles.get(file).equals(FileStatus.Removed)){
+                blob = new RemoveBlob(file);
             } else {
-                blob = createNewBlob(file);
+                blob = blobs.createNewBlob(file, head);
             }
-            blobs.add(blob, cachedData);
+            blobs.add(blob);
             head.addFile(file, blob);
         }
         stagedFiles.clear();
@@ -138,17 +137,7 @@ public class Repository{
     }
 
     private void add(File file){
-        stagedFiles.add(file);
-    }
-
-    private Blob createNewBlob(File file){
-        if (differs(file)){
-            Blob blob = head.getBlob(file);
-            int version = (blob == null) ? 0 : blob.getVersion() + 1;
-            return new Blob(version, file, cachedData);
-        } else {
-            return null;
-        }
+        stagedFiles.put(file, checkStatus(file));
     }
 
     public void remove(String file){
@@ -156,13 +145,13 @@ public class Repository{
     }
 
     private void remove(File file){
-        if (!file.exists()){
-            throw new GitletException("File does not exist: " + file);
-        } else {
-            if (!stagedFiles.contains(file)){
-                throw new GitletException("File does not tracked: " + file);
-            }
+        if (head.contains(file)) {
+            stagedFiles.put(file, FileStatus.Removed);
+            if (file.exists()) restrictedDelete(file);
+        } else if (stagedFiles.containsKey(file)) {
             stagedFiles.remove(file);
+        } else {
+            throw new GitletException("File " + file + " not tracked nor staged.");
         }
     }
 
@@ -238,18 +227,8 @@ public class Repository{
     private void checkoutFileInCommit(Commit c, File f){
         Blob blob = c.getBlob(f);
         assert blob != null;
-        System.out.println(f + " -- " + blob.getHash());
-        File file = blob.getFile();
-        if (!blob.isDeleteBlob()) {
-            if (!file.exists()) try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            writeContents(f, (Object) blobs.getContents(blob));
-        } else {
-            restrictedDelete(file);
-        }
+        //System.out.println(f + " -- " + blob.getHash());
+        blob.recoverFile();
     }
 
     public void branch(String branch){
@@ -258,9 +237,9 @@ public class Repository{
                 throw new GitletException("Branch " + b.name + " already exists.");
         }
         currentBranch = new Branch(branch, head);
-        for (Branch b: branches) b.active = false;
+        for (Branch b: branches) b.isCurrentBranch = false;
         branches.add(currentBranch);
-        currentBranch.active = true;
+        currentBranch.isCurrentBranch = true;
     }
 
     public void rmBranch(String branch){
@@ -285,7 +264,6 @@ public class Repository{
         Status currentStatus = new Status(this, head);
         if (!currentStatus.modifiedFile.isEmpty() && !currentStatus.stagedFiles.isEmpty())
             throw new GitletException("Working directory not clean. Make commit first.");
-        Status targetStatus = new Status(this, branch.head);
         for (File file: listFiles(CWD)) {
             if (head.contains(file) && branch.head.contains(file)){
                 if (branch.start.contains(file)){
@@ -298,8 +276,10 @@ public class Repository{
                         add(file);
                     }
                     // Case 2 stays untouched
+                    continue;
                 // Case 8
-                } else if (!notModifedBetweenCommits(file, branch.head, head)){
+                }
+                if (!notModifedBetweenCommits(file, branch.head, head)){
                     mergeConflictFiles(file, head, branch.head);
                     add(file);
                 }
@@ -351,11 +331,7 @@ public class Repository{
         String name = file.getAbsolutePath();
         String hash = sha1(name, data);
         Blob blob = c.getBlob(file);
-        if (blob == null || !Objects.equals(blob.getHash(), hash)) {
-            return true;
-        } else {
-            return false;
-        }
+        return blob == null || !Objects.equals(blob.getHash(), hash);
     }
 
     private boolean differs(File file){
@@ -374,6 +350,9 @@ public class Repository{
         throw new GitletException("Branch " + branch + " not found.");
     }
 
+    /*
+     * sets cachedData
+     */
     public static boolean differs(Commit c, File file){
         if (!file.exists()){
             throw new GitletException("File does not exist: " + file);
@@ -383,7 +362,17 @@ public class Repository{
         }
     }
 
+    private FileStatus checkStatus(File f){
+        if (differs(f)) return FileStatus.Modified;
+        if (!head.contains(f)) return FileStatus.New;
+        else throw new GitletException("File " + f + " not modified.");
+    }
+
     public void debug(){
-        currentBranch.head.printCommit();
+        for (File f: head.getFiles()){
+            Blob b = head.getBlob(f);
+            String s = new String(b.getContents());
+            System.out.println(f.getName() + ": " + s);
+        }
     }
 }
