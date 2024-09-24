@@ -6,37 +6,51 @@ import java.io.Serializable;
 
 public class Blob implements Serializable {
     int version;
-    File file;
+    String fileName;
     String sha1;
     private int hashCode = 0;
     public transient byte[] data;
+    File base;
+    File CWD;
 
-    public Blob(int version, File file, byte[] data) {
+    public Blob(int version, File file, byte[] data, RepositoryBase repo) {
         this.version = version;
-        this.file = file;
+        this.fileName = file.getName();
         this.data = data;
+        this.base = repo.BLOB_DIR;
+        this.CWD = repo.CWD;
         if (data != null)
-            sha1 = Utils.sha1(file.getAbsolutePath(), (Object) data);
+            sha1 = Utils.sha1(file.getName(), (Object) data);
         else
-            sha1 = Utils.sha1(file.getAbsolutePath());
+            sha1 = Utils.sha1(file.getName());
+    }
+
+    public Blob(Blob b){
+        this.version = b.version;
+        this.fileName = b.fileName;
+        this.sha1 = b.sha1;
+        this.hashCode = b.hashCode;
+        this.data = b.data;
+        this.base = b.base;
+        this.CWD = b.CWD;
     }
 
     public int getVersion() { return version;}
-    public File getFile() { return file;}
+    public File getFile() { return Utils.join(CWD, fileName);}
     public String getHash() { return sha1;}
 
     @Override
     public int hashCode(){
         if (hashCode == 0) {
             hashCode = version;
-            hashCode = 31 * hashCode + file.hashCode();
+            hashCode = 31 * hashCode + fileName.hashCode();
             hashCode = 31 * hashCode + sha1.hashCode();
         }
         return hashCode;
     }
 
     public String toString(){
-        return file.getName() + " (" + version + ") " + getHash().substring(0, 4);
+        return fileName + " (" + version + ") " + getHash().substring(0, 4);
     }
 
     public void save() {
@@ -44,7 +58,7 @@ public class Blob implements Serializable {
     }
 
     public File getFolder(){
-        return Utils.join(BlobContainer.BASE, sha1.substring(0, 2));
+        return Utils.join(base, sha1.substring(0, 2));
     }
 
     public File getBlobFile(){
@@ -57,6 +71,7 @@ public class Blob implements Serializable {
 
     public void recoverFile(){
         data = getContents();
+        File file = getFile();
         if (!file.exists()){
             try {
                 file.createNewFile();

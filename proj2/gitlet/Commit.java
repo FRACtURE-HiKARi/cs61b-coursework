@@ -25,39 +25,63 @@ public class Commit implements Serializable {
      */
 
     /** The message of this Commit. */
-    protected String message;
-    protected String author;
+    String message;
+    String author;
     //private String email;
-    protected Date commitDate;
-    protected Commit parent;
-    //private Collection<Commit> children;
-    protected Map<File, Blob> files;
-    protected int hashCode = 0;
-    protected String SHA1 = null;
-    protected Branch branch;
+    Date commitDate;
+    Commit parent;
+    // fileName -> Blob
+    Map<String, Blob> files;
+    int hashCode = 0;
+    String SHA1 = null;
+    Branch branch;
+    File CWD;
+    int height;
     public static DateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.ENGLISH);
 
     /* TODO: fill in the rest of this class. */
-    public Commit(String message, String author, Date commitDate, Commit parent, Branch branch) {
+    public Commit(String message, String author, Date commitDate, Commit parent, Branch branch, File CWD) {
         this.message = message;
         this.author = author;
         this.commitDate = commitDate;
         this.parent = parent;
         this.branch = branch;
+        this.CWD = CWD;
         files = new HashMap<>();
-        if (parent != null) files.putAll(parent.files);
+        if (parent != null){
+            files.putAll(parent.files);
+            height = parent.height + 1;
+        }else {
+            height = 0;
+        }
+    }
+
+    public Commit(Commit c){
+        this.message = c.message;
+        this.author = c.author;
+        this.commitDate = c.commitDate;
+        this.parent = c.parent;
+        this.branch = c.branch;
+        this.hashCode = c.hashCode();
+        this.SHA1 = c.SHA1;
+        this.CWD = c.CWD;
+        this.height = c.height;
+        this.files = new HashMap<>();
+        for (String file : c.files.keySet()) {
+            this.files.put(file, new Blob(c.files.get(file)));
+        }
     }
 
     public void addFile(String fileName, Blob blob){
-        files.put(new File(fileName), blob);
+        files.put(fileName, blob);
     }
 
     public void addFile(File file, Blob blob){
-        files.put(file, blob);
+        files.put(file.getName(), blob);
     }
 
     public Blob getBlob(File file){
-        return files.get(file);
+        return files.get(file.getName());
     }
 
     public boolean contains(File file){
@@ -72,8 +96,8 @@ public class Commit implements Serializable {
             objects[i++] = message;
             objects[i++] = author;
             objects[i++] = commitDate.toString();
-            for (File file : files.keySet()) {
-                objects[i++] = files.get(file).getHash();
+            for (String fileName : files.keySet()) {
+                objects[i++] = files.get(fileName).getHash();
             }
             SHA1 = Utils.sha1(objects);
         }
@@ -84,7 +108,13 @@ public class Commit implements Serializable {
 
     public String getMessage() { return message; }
 
-    public Set<File> getFiles() { return files.keySet(); }
+    public Set<File> getFiles() {
+        Set<File> files = new HashSet<>();
+        for (String name: this.files.keySet()){
+            files.add(Utils.join(CWD, name));
+        }
+        return files;
+    }
 
     public Date getDate() { return commitDate; }
 
@@ -115,5 +145,12 @@ public class Commit implements Serializable {
         for (Blob blob : files.values()) {
             System.out.println(blob.toString());
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Commit)
+            return hashCode() == ((Commit)obj).hashCode();
+        else return false;
     }
 }

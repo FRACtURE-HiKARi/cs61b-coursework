@@ -11,22 +11,24 @@ public class Status implements Serializable {
     public Set<Blob> blobs;
     public Map<File, FileStatus> stagedFiles;
     public Set<Branch> branches;
+    public Map<String, File> remoteRepos;
 
     public transient Set<File> removedFile;
     public transient Set<File> modifiedFile;
     public transient Set<File> untrackedFile;
+    transient File workingDirectory;
 
-    public Status(Repository repo){
+    public Status(RepositoryBase repo){
         initWithRepo(repo);
         checkFileStatus();
     }
 
-    public Status(Repository repo, Commit targetCommit){
+    public Status(RepositoryBase repo, Commit targetCommit){
         initWithRepo(repo);
         checkFileStatus(targetCommit);
     }
 
-    private void initWithRepo(Repository repo){
+    private void initWithRepo(RepositoryBase repo){
         this.head = repo.head;
         this.commits = repo.commits;
         this.blobs = repo.blobs.getBlobs();
@@ -36,6 +38,8 @@ public class Status implements Serializable {
         this.removedFile = new HashSet<>();
         this.modifiedFile = new HashSet<>();
         this.untrackedFile = new HashSet<>();
+        this.remoteRepos = repo.remoteRepos;
+        this.workingDirectory = repo.CWD;
     }
 
     public void printStatus(){
@@ -62,7 +66,7 @@ public class Status implements Serializable {
     }
 
     public void checkFileStatus(Commit c){
-        File[] files = Utils.listFiles(Repository.CWD);
+        File[] files = Utils.listFiles(workingDirectory);
         assert files != null;
         Set<File> fileSet = new HashSet<>();
         for (File f: files){

@@ -6,20 +6,33 @@ import java.io.File;
 
 public class BlobContainer {
     private Set<Blob> blobs;
-    public static final File BASE = Repository.BLOB_DIR;
+    public File BASE;
+    RepositoryBase repo;
 
-    public BlobContainer() {
+    public BlobContainer(RepositoryBase repo) {
         blobs = new HashSet<>();
+        this.repo = repo;
+        this.BASE = repo.BLOB_DIR;
     }
 
-    public BlobContainer(Set<Blob> blobs) {
+    public BlobContainer(Set<Blob> blobs, RepositoryBase repo) {
         this.blobs = blobs;
+        this.repo = repo;
+        this.BASE = repo.BLOB_DIR;
     }
 
     public void add(Blob blob) {
         blobs.add(blob);
         File storeFolder = blob.getFolder();
         storeFolder.mkdirs();
+        blob.save();
+    }
+
+    public void add(Blob blob, byte[] overwriteData){
+        blobs.add(blob);
+        File storeFolder = blob.getFolder();
+        storeFolder.mkdirs();
+        blob.data = overwriteData;
         blob.save();
     }
 
@@ -47,6 +60,6 @@ public class BlobContainer {
             if (blob.getVersion() > maxVersion) maxVersion = blob.getVersion();
         }
         maxVersion++;
-        return new Blob(maxVersion, file, Utils.readContents(file));
+        return new Blob(maxVersion, file, Utils.readContents(file), repo);
     }
 }

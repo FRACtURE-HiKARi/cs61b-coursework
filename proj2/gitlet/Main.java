@@ -76,6 +76,21 @@ public class Main {
                 case "merge":
                     repo.merge(args[1]);
                     break;
+                case "add-remote":
+                    repo.addRemote(args[1], args[2]);
+                    break;
+                case "rm-remote":
+                    repo.rmRemote(args[1]);
+                    break;
+                case "pull":
+                    repo.pull(args[1], args[2]);
+                    break;
+                case "fetch":
+                    repo.checkoutBranch(repo.fetch(args[1], args[2]));
+                    break;
+                case "push":
+                    repo.push(args[1], args[2]);
+                    break;
                 case "db":
                     repo.debug();
                     break;
@@ -108,7 +123,13 @@ public class Main {
                 + "    reset [commit id]    Checks out all the files tracked by the given commit.\n"
                 + "    merge [branch]       Merges files from the given branch into the current branch.\n"
                 + "\n"
-                + "    help              Prints the help message.\n"
+                + "    help                 Prints the help message.\n"
+                + "Remote Commands:\n"
+                + "    add-remote [name] [path] adds a remote repo\n"
+                + "    rm-remote [name]         removes a remote repo\n"
+                + "    pull [remote] [branch]   pull commits from the remote repo and try merging\n"
+                + "    fetch [remote] [branch]  fetch file from the remote branch but not merging\n"
+                + "    push [remote]            push commits to the remote repo and try merging\n"
         );
     }
 

@@ -1,13 +1,22 @@
 package gitlet;
 
+import java.io.File;
 import java.util.Date;
 
 public class MergedCommit extends Commit {
 
     Commit directParent;
     Commit mergedParent;
-    public MergedCommit(String message, String author, Date commitDate, Commit directParent, Commit mergedParent, Branch branch){
-        super(message, author, commitDate, directParent, branch);
+    public MergedCommit(
+            String message,
+            String author,
+            Date commitDate,
+            Commit directParent,
+            Commit mergedParent,
+            Branch branch,
+            File CWD){
+        super(message, author, commitDate, directParent, branch, CWD);
+        files.putAll(mergedParent.files);
         this.directParent = directParent;
         this.mergedParent = mergedParent;
     }
