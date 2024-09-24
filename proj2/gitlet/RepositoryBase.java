@@ -125,6 +125,9 @@ public class RepositoryBase {
 
     private void applyStagedFiles() {
         for (File file: stagedFiles.keySet()) {
+            if (stagedFiles.get(file).equals(FileStatus.NotModified)) {
+                continue;
+            }
             Blob blob = null;
             cachedData = null;
             if (stagedFiles.get(file).equals(FileStatus.Removed)) {
@@ -149,8 +152,12 @@ public class RepositoryBase {
     private void add(File file) {
         exitOnCondition(!file.exists(), "File does not exist.");
         FileStatus status = checkStatus(file);
-        exitOnCondition(status == FileStatus.NotModified, "");
-        stagedFiles.put(file, checkStatus(file));
+        if (status == FileStatus.NotModified) {
+            exitOnCondition(!stagedFiles.get(file).equals(FileStatus.Removed), "");
+            stagedFiles.remove(file);
+        } else {
+            stagedFiles.put(file, checkStatus(file));
+        }
     }
 
     public void remove(String file) {

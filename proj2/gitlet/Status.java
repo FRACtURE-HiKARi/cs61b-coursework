@@ -47,17 +47,26 @@ public class Status implements Serializable {
         for (Branch b : branches) b.printBranch();
         System.out.println("\n=== Staged Files ===");
         for (File f : stagedFiles.keySet())
-            if (!stagedFiles.get(f).equals(FileStatus.Removed))
+            if (!stagedFiles.get(f).equals(FileStatus.Removed)) {
                 System.out.println(f.getName());
+            }
         System.out.println("\n=== Removed Files ===");
-        for (File f : stagedFiles.keySet())
-            if (stagedFiles.get(f).equals(FileStatus.Removed))
+        for (File f : stagedFiles.keySet()) {
+            if (stagedFiles.get(f).equals(FileStatus.Removed)) {
                 System.out.println(f.getName());
+            }
+        }
         System.out.println("\n=== Modifications Not Staged For Commit ===");
-        for (File f: modifiedFile) System.out.println(f.getName() + " (modified)");
-        for (File f: removedFile) System.out.println(f.getName() + " (removed)");
+        for (File f: modifiedFile) {
+            System.out.println(f.getName() + " (modified)");
+        }
+        for (File f: removedFile) {
+            System.out.println(f.getName() + " (removed)");
+        }
         System.out.println("\n=== Untracked Files ===");
-        for (File f: untrackedFile) System.out.println(f.getName());
+        for (File f: untrackedFile) {
+            System.out.println(f.getName());
+        }
         System.out.println();
     }
 
@@ -71,8 +80,12 @@ public class Status implements Serializable {
         Set<File> fileSet = new HashSet<>();
         for (File f: files) {
             fileSet.add(f);
-            if (!c.contains(f) && !stagedFiles.containsKey(f)) untrackedFile.add(f);
-            else if (!stagedFiles.containsKey(f) && Repository.differs(c, f)) modifiedFile.add(f);
+            if (!c.contains(f) && !stagedFiles.containsKey(f)) {
+                untrackedFile.add(f);
+            }
+            else if (!stagedFiles.containsKey(f) && Repository.differs(c, f)) {
+                modifiedFile.add(f);
+            }
         }
         for (File f: c.getFiles()) {
             if (!fileSet.contains(f) && !stagedFiles.containsKey(f)) removedFile.add(f);
