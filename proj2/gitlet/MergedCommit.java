@@ -14,7 +14,7 @@ public class MergedCommit extends Commit {
             Commit directParent,
             Commit mergedParent,
             Branch branch,
-            File CWD){
+            File CWD) {
         super(message, author, commitDate, directParent, branch, CWD);
         files.putAll(mergedParent.files);
         this.directParent = directParent;
@@ -22,7 +22,7 @@ public class MergedCommit extends Commit {
     }
 
     @Override
-    public void printCommit(){
+    public void printCommit() {
         System.out.print(
                 "===\n"
                         + "commit " + getHash() + "\n"

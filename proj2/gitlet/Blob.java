@@ -25,7 +25,7 @@ public class Blob implements Serializable {
             sha1 = Utils.sha1(file.getName());
     }
 
-    public Blob(Blob b){
+    public Blob(Blob b) {
         this.version = b.version;
         this.fileName = b.fileName;
         this.sha1 = b.sha1;
@@ -40,7 +40,7 @@ public class Blob implements Serializable {
     public String getHash() { return sha1;}
 
     @Override
-    public int hashCode(){
+    public int hashCode() {
         if (hashCode == 0) {
             hashCode = version;
             hashCode = 31 * hashCode + fileName.hashCode();
@@ -49,7 +49,7 @@ public class Blob implements Serializable {
         return hashCode;
     }
 
-    public String toString(){
+    public String toString() {
         return fileName + " (" + version + ") " + getHash().substring(0, 4);
     }
 
@@ -57,22 +57,22 @@ public class Blob implements Serializable {
         Utils.writeContents(getBlobFile(), (Object) data);
     }
 
-    public File getFolder(){
+    public File getFolder() {
         return Utils.join(base, sha1.substring(0, 2));
     }
 
-    public File getBlobFile(){
+    public File getBlobFile() {
         return Utils.join(getFolder(), sha1);
     }
 
-    public byte[] getContents(){
+    public byte[] getContents() {
         return (data == null) ? Utils.readContents(getBlobFile()) : data;
     }
 
-    public void recoverFile(){
+    public void recoverFile() {
         data = getContents();
         File file = getFile();
-        if (!file.exists()){
+        if (!file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {

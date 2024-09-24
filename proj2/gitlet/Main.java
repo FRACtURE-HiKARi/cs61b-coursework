@@ -22,7 +22,7 @@ public class Main {
 
         Repository repo = new Repository();
         String firstArg = args[0];
-        if (firstArg.equals("init")){
+        if (firstArg.equals("init")) {
             repo.init();
         } else {
             if (!Repository.GITLET_FILE.exists())
@@ -32,7 +32,7 @@ public class Main {
                     repo.add(args[1]);
                     break;
                 case "commit":
-                    String user = System.getProperty("user.name");
+                    String user = "61b-student";
                     repo.makeCommit(args[1], user);
                     break;
                 case "rm":

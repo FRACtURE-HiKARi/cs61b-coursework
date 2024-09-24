@@ -18,17 +18,17 @@ public class Status implements Serializable {
     public transient Set<File> untrackedFile;
     transient File workingDirectory;
 
-    public Status(RepositoryBase repo){
+    public Status(RepositoryBase repo) {
         initWithRepo(repo);
         checkFileStatus();
     }
 
-    public Status(RepositoryBase repo, Commit targetCommit){
+    public Status(RepositoryBase repo, Commit targetCommit) {
         initWithRepo(repo);
         checkFileStatus(targetCommit);
     }
 
-    private void initWithRepo(RepositoryBase repo){
+    private void initWithRepo(RepositoryBase repo) {
         this.head = repo.head;
         this.commits = repo.commits;
         this.blobs = repo.blobs.getBlobs();
@@ -42,7 +42,7 @@ public class Status implements Serializable {
         this.workingDirectory = repo.CWD;
     }
 
-    public void printStatus(){
+    public void printStatus() {
         System.out.println("=== Branches ===");
         for (Branch b : branches) b.printBranch();
         System.out.println("\n=== Staged Files ===");
@@ -61,20 +61,20 @@ public class Status implements Serializable {
         System.out.println();
     }
 
-    public void checkFileStatus(){
+    public void checkFileStatus() {
         checkFileStatus(head);
     }
 
-    public void checkFileStatus(Commit c){
+    public void checkFileStatus(Commit c) {
         File[] files = Utils.listFiles(workingDirectory);
         assert files != null;
         Set<File> fileSet = new HashSet<>();
-        for (File f: files){
+        for (File f: files) {
             fileSet.add(f);
             if (!c.contains(f) && !stagedFiles.containsKey(f)) untrackedFile.add(f);
             else if (!stagedFiles.containsKey(f) && Repository.differs(c, f)) modifiedFile.add(f);
         }
-        for (File f: c.getFiles()){
+        for (File f: c.getFiles()) {
             if (!fileSet.contains(f) && !stagedFiles.containsKey(f)) removedFile.add(f);
         }
     }

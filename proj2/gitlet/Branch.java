@@ -14,27 +14,27 @@ public class Branch implements Serializable{
         this.head = head;
     }
 
-    public Branch(Branch b){
+    public Branch(Branch b) {
         this.name = b.name;
         this.head = b.head;
         this.isCurrentBranch = b.isCurrentBranch;
         this.hashCode = b.hashCode();
     }
 
-    public void printBranch(){
+    public void printBranch() {
         if (isCurrentBranch) System.out.print("*");
         System.out.println(name);
     }
 
     @Override
-    public int hashCode(){
+    public int hashCode() {
         if (hashCode == 0) {
             hashCode = name.hashCode();
         }
         return hashCode;
     }
 
-    public boolean containsCommit(Commit commit){
+    public boolean containsCommit(Commit commit) {
         Commit current = head;
         while (current != null) {
             if (current.equals(commit))
@@ -44,7 +44,7 @@ public class Branch implements Serializable{
         return false;
     }
 
-    public void rename(String name){
+    public void rename(String name) {
         this.name = name;
         this.hashCode = 0;
     }

@@ -229,7 +229,7 @@ class Utils {
         System.out.println();
     }
 
-    static File[] listFiles(File directory){
+    static File[] listFiles(File directory) {
         assert directory.isDirectory();
         return directory.listFiles(new FileFilter() {
             @Override

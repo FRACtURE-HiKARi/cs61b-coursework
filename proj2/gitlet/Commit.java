@@ -48,7 +48,7 @@ public class Commit implements Serializable {
         this.branch = branch;
         this.CWD = CWD;
         files = new HashMap<>();
-        if (parent != null){
+        if (parent != null) {
             files.putAll(parent.files);
             height = parent.height + 1;
         }else {
@@ -56,7 +56,7 @@ public class Commit implements Serializable {
         }
     }
 
-    public Commit(Commit c){
+    public Commit(Commit c) {
         this.message = c.message;
         this.author = c.author;
         this.commitDate = c.commitDate;
@@ -72,24 +72,24 @@ public class Commit implements Serializable {
         }
     }
 
-    public void addFile(String fileName, Blob blob){
+    public void addFile(String fileName, Blob blob) {
         files.put(fileName, blob);
     }
 
-    public void addFile(File file, Blob blob){
+    public void addFile(File file, Blob blob) {
         files.put(file.getName(), blob);
     }
 
-    public Blob getBlob(File file){
+    public Blob getBlob(File file) {
         return files.get(file.getName());
     }
 
-    public boolean contains(File file){
+    public boolean contains(File file) {
         Blob b = getBlob(file);
         return b != null && !(b instanceof RemoveBlob);
     }
 
-    public String getHash(){
+    public String getHash() {
         if (SHA1 == null) {
             Object[] objects = new Object[files.size() + 3];
             int i = 0;
@@ -110,7 +110,7 @@ public class Commit implements Serializable {
 
     public Set<File> getFiles() {
         Set<File> files = new HashSet<>();
-        for (String name: this.files.keySet()){
+        for (String name: this.files.keySet()) {
             files.add(Utils.join(CWD, name));
         }
         return files;
@@ -119,7 +119,7 @@ public class Commit implements Serializable {
     public Date getDate() { return commitDate; }
 
     @Override
-    public int hashCode(){
+    public int hashCode() {
         if (hashCode == 0) {
             hashCode = this.message.hashCode();
             hashCode = 31 * hashCode + this.author.hashCode();
@@ -130,7 +130,7 @@ public class Commit implements Serializable {
         return hashCode;
     }
 
-    public void printCommit(){
+    public void printCommit() {
         System.out.print(
                   "===\n"
                 + "commit " + getHash() + "\n"
@@ -141,7 +141,7 @@ public class Commit implements Serializable {
         System.out.println();
     }
 
-    public void printBlobs(){
+    public void printBlobs() {
         for (Blob blob : files.values()) {
             System.out.println(blob.toString());
         }
@@ -149,8 +149,9 @@ public class Commit implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Commit)
-            return hashCode() == ((Commit)obj).hashCode();
+        if (obj instanceof Commit) {
+            return hashCode() == ((Commit) obj).hashCode();
+        }
         else return false;
     }
 }

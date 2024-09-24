@@ -16,26 +16,29 @@ public class Repository extends RepositoryBase{
         super.GITLET_FILE = GITLET_FILE;
         super.BLOB_DIR = BLOB_DIR;
         super.blobs = new BlobContainer(this);
-        if (GITLET_DIR.exists()) loadState();
+        if (GITLET_DIR.exists()) {
+            loadState();
+        }
     }
 
     @Override
-    public void debug(){
+    public void debug() {
         //getCommonParent(getBranch("nb").head, getBranch("master").head).printCommit();
         remoteStatus();
     }
 
-    public void remoteStatus(){
+    public void remoteStatus() {
         RepositoryBase r = getRemote("origin");
         r.status();
         r.log();
     }
 
-    public Branch fetch(String remoteName, String branchName){
+    public Branch fetch(String remoteName, String branchName) {
         RepositoryBase remoteRepo = getRemote(remoteName);
         Branch remoteBranch = remoteRepo.getBranch(branchName);
-        if (remoteBranch == null)
+        if (remoteBranch == null) {
             throw new GitletException("Branch " + branchName + " in remote " + remoteName + " not found.");
+        }
         return addNewBranch(remoteBranch);
     }
 
@@ -49,7 +52,9 @@ public class Repository extends RepositoryBase{
 
     public void push(String remoteName, String branchName) {
         Branch b = getBranch(branchName);
-        if (b == null) throw new GitletException("Branch " + branchName + " not found.");
+        if {
+            (b == null) throw new GitletException("Branch " + branchName + " not found.");
+        }
         RepositoryBase remoteRepo = getRemote(remoteName);
         remoteRepo.checkoutBranch(remoteRepo.addNewBranch(b));
         remoteRepo.saveState();

@@ -28,7 +28,7 @@ public class BlobContainer {
         blob.save();
     }
 
-    public void add(Blob blob, byte[] overwriteData){
+    public void add(Blob blob, byte[] overwriteData) {
         blobs.add(blob);
         File storeFolder = blob.getFolder();
         storeFolder.mkdirs();
@@ -52,7 +52,7 @@ public class BlobContainer {
         return new String(blob.getContents(), StandardCharsets.UTF_8);
     }
 
-    public Blob createNewBlob(File file, Commit head){
+    public Blob createNewBlob(File file, Commit head) {
         if (!Repository.differs(head, file)) return null;
         if (!file.exists()) throw new GitletException("File " + file + " does not exist");
         int maxVersion = 0;

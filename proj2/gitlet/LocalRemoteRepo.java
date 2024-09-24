@@ -14,12 +14,12 @@ public class LocalRemoteRepo extends RepositoryBase{
         if (GITLET_FILE.exists()) {loadState();}
     }
 
-    public void test(){
+    public void test() {
         System.out.println(CWD);
     }
 
     @Override
-    void fetchCommitWithBlobs(Commit c){
+    void fetchCommitWithBlobs(Commit c) {
         c.CWD = CWD;
         super.getRemoteBlobs(c);
     }
