@@ -52,8 +52,8 @@ public class Repository extends RepositoryBase{
 
     public void push(String remoteName, String branchName) {
         Branch b = getBranch(branchName);
-        if {
-            (b == null) throw new GitletException("Branch " + branchName + " not found.");
+        if (b == null) {
+             throw new GitletException("Branch " + branchName + " not found.");
         }
         RepositoryBase remoteRepo = getRemote(remoteName);
         remoteRepo.checkoutBranch(remoteRepo.addNewBranch(b));
