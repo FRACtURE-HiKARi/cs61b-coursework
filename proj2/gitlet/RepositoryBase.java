@@ -90,9 +90,7 @@ public class RepositoryBase {
             branch("master");
             head.branch = currentBranch;
         } else {
-            throw new GitletException(
-                    "A Gitlet version-control system already exists in the current directory " + CWD
-            );
+            exitOnCondition(true, "A Gitlet version-control system already exists in the current directory.");
         }
     }
 
@@ -120,6 +118,8 @@ public class RepositoryBase {
     }
 
     public void makeCommit(String message, String author) {
+        exitOnCondition(stagedFiles.isEmpty(), "No changes added to the commit.");
+        exitOnCondition(message.isEmpty(), "Please enter a commit message.");
         makeCommit(message, author, new Date());
     }
 
@@ -147,8 +147,9 @@ public class RepositoryBase {
     }
 
     private void add(File file) {
-        if (checkStatus(file) == FileStatus.NotModified)
-            throw new GitletException("File " + file + " is not modified.");
+        exitOnCondition(!file.exists(), "File does not exist.");
+        FileStatus status = checkStatus(file);
+        exitOnCondition(status == FileStatus.NotModified, "");
         stagedFiles.put(file, checkStatus(file));
     }
 
@@ -165,7 +166,7 @@ public class RepositoryBase {
         } else if (stagedFiles.containsKey(file)) {
             stagedFiles.remove(file);
         } else {
-            throw new GitletException("File " + file + " not tracked nor staged.");
+            exitOnCondition(true, "No reason to remove the file.");
         }
     }
 
@@ -194,11 +195,14 @@ public class RepositoryBase {
     }
 
     public void find(String msg) {
+        Boolean found = false;
         for (Commit commit: commits) {
             if (commit.getMessage().contains(msg)) {
                 commit.printCommit();
+                found = true;
             }
         }
+        exitOnCondition(!found, "Found no commit with that message.");
     }
 
     public void checkout(String arg) {
@@ -210,7 +214,7 @@ public class RepositoryBase {
             }
         }
         // search with branch name
-        System.out.println("Checking out branch " + arg);
+        //System.out.println("Checking out branch " + arg);
         Branch target = getBranch(arg);
         if (target == null) {
             throw new GitletException("Branch " + arg + " not found.");
@@ -241,8 +245,8 @@ public class RepositoryBase {
 
     public void checkoutCommit(Commit c) {
         switchBranchStatus(c.branch);
-        System.out.println("Checking out commit:");
-        c.printCommit();
+        //System.out.println("Checking out commit:");
+        //c.printCommit();
         for (File file: c.getFiles()) {
             checkoutFileInCommit(c, file);
         }

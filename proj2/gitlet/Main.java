@@ -50,6 +50,7 @@ public class Main {
                 case "status":
                     repo.status();
                     break;
+                // TODO: different checkout cases
                 case "checkout":
                     int len = args.length;
                     for (int i = 0; i < args.length; i++) {

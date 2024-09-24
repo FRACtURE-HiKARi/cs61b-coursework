@@ -53,7 +53,7 @@ public class Status implements Serializable {
         for (File f : stagedFiles.keySet())
             if (stagedFiles.get(f).equals(FileStatus.Removed))
                 System.out.println(f.getName());
-        System.out.println("\n=== Modifications Not Staged ===");
+        System.out.println("\n=== Modifications Not Staged For Commit ===");
         for (File f: modifiedFile) System.out.println(f.getName() + " (modified)");
         for (File f: removedFile) System.out.println(f.getName() + " (removed)");
         System.out.println("\n=== Untracked Files ===");
