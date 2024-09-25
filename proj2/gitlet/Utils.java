@@ -241,7 +241,9 @@ class Utils {
 
     static void exitOnCondition(boolean condition, String message) {
         if (condition) {
-            System.out.println(message);
+            if (message != null){
+                System.out.println(message);
+            }
             System.exit(0);
         }
     }

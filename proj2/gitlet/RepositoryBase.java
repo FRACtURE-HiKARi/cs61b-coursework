@@ -153,7 +153,7 @@ public class RepositoryBase {
         exitOnCondition(!file.exists(), "File does not exist.");
         FileStatus status = checkStatus(file);
         if (status == FileStatus.NotModified) {
-            exitOnCondition(!stagedFiles.get(file).equals(FileStatus.Removed), "");
+            exitOnCondition(!Objects.equals(stagedFiles.get(file), FileStatus.Removed), null);
             stagedFiles.remove(file);
         } else {
             stagedFiles.put(file, checkStatus(file));
