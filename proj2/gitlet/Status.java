@@ -88,7 +88,9 @@ public class Status implements Serializable {
             }
         }
         for (File f: c.getFiles()) {
-            if (!fileSet.contains(f) && !stagedFiles.containsKey(f)) removedFile.add(f);
+            if (!fileSet.contains(f) && !stagedFiles.containsKey(f)) {
+                removedFile.add(f);
+            }
         }
     }
 }

@@ -111,6 +111,9 @@ public class Commit implements Serializable {
     public Set<File> getFiles() {
         Set<File> files = new HashSet<>();
         for (String name: this.files.keySet()) {
+            if (this.files.get(name) instanceof RemoveBlob) {
+                continue;
+            }
             files.add(Utils.join(CWD, name));
         }
         return files;

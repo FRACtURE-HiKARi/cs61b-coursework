@@ -202,10 +202,10 @@ public class RepositoryBase {
     }
 
     public void find(String msg) {
-        Boolean found = false;
+        boolean found = false;
         for (Commit commit: commits) {
             if (commit.getMessage().contains(msg)) {
-                commit.printCommit();
+                System.out.println(commit.getHash());
                 found = true;
             }
         }
