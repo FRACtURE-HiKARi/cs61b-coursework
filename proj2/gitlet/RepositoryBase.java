@@ -332,7 +332,9 @@ public class RepositoryBase {
                         add(file);
                     }
                     // Case 2 stays untouched
-                    continue;
+                    else if (notModifedBetweenCommits(file, other.head, start)){
+                        continue;
+                    }
                     // Case 8
                 }
                 if (!notModifedBetweenCommits(file, other.head, main.head)) {
@@ -460,7 +462,7 @@ public class RepositoryBase {
     }
 
     private void mergeConflictFiles(File f, Commit c1, Commit c2) {
-        System.out.println("File " + f + "conflicts in two commits. Keeping both contents");
+        System.out.println("Encountered a merge conflict.");
         mergeConflictBlobs(f, c1.getBlob(f), c2.getBlob(f));
     }
 
