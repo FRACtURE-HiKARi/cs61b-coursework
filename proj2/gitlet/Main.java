@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Objects;
 
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author TODO
@@ -52,17 +53,14 @@ public class Main {
                     break;
                 // TODO: different checkout cases
                 case "checkout":
-                    int len = args.length;
-                    for (int i = 0; i < args.length; i++) {
-                        if (args[i].equals("--")) {
-                            System.arraycopy(args, i + 1, args, i, args.length - i - 1);
-                            len -= 1;
-                        }
-                    }
-                    if (len == 2) {
-                        repo.checkout(args[1]);
-                    } else {
-                        repo.checkout(args[1], args[2]);
+                    if (args.length == 4) {
+                        Utils.exitOnCondition(!Objects.equals(args[2], "--"), "Incorrect operands.");
+                        repo.checkout(args[1], args[3]);
+                    } else if (args.length == 3) {
+                        Utils.exitOnCondition(!Objects.equals(args[1], "--"), "Incorrect operands.");
+                        repo.checkoutFile(args[2]);
+                    } else if (args.length == 2) {
+                        repo.checkoutBranch(args[1]);
                     }
                     break;
                 case "branch":

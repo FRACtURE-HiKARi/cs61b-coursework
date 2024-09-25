@@ -212,21 +212,23 @@ public class RepositoryBase {
         exitOnCondition(!found, "Found no commit with that message.");
     }
 
-    public void checkout(String arg) {
-        // search with file name
+    public void checkoutBranch(String branchName) {
+        // search with branch name
+        //System.out.println("Checking out branch " + arg);
+        Branch target = getBranch(branchName);
+        exitOnCondition(target == null, "No such branch exists.");
+        exitOnCondition(target.equals(currentBranch), "No need to checkout the current branch.");
+        checkoutBranch(target);
+    }
+
+    public void checkoutFile(String filename){
         for (File file: head.getFiles()) {
-            if (file.getName().equals(arg)) {
+            if (file.getName().equals(filename)) {
                 checkoutFileInCommit(head, file);
                 return;
             }
         }
-        // search with branch name
-        //System.out.println("Checking out branch " + arg);
-        Branch target = getBranch(arg);
-        if (target == null) {
-            throw new GitletException("Branch " + arg + " not found.");
-        }
-        checkoutBranch(target);
+        exitOnCondition(true, "File does not exist in that commit.");
     }
 
     public void checkout(String commitID, String fileName) {
@@ -234,8 +236,7 @@ public class RepositoryBase {
         if (c != null && c.contains(join(CWD, fileName))) {
             checkoutFileInCommit(c, join(CWD, fileName));
         }
-        else
-            throw new GitletException("Commit " + commitID + " with file " + fileName + " not found.");
+        exitOnCondition(true, "File does not exist in that commit.");
     }
 
     public Commit getCommit(String shaVal) {
