@@ -88,6 +88,7 @@ public class RepositoryBase {
 
             makeCommit("initial commit", "initial commit", new Date((long) 0));
             branch("master");
+            switchBranchStatus(getBranch("master"));
             head.branch = currentBranch;
         } else {
             exitOnCondition(true, "A Gitlet version-control system already exists in the current directory.");
@@ -248,14 +249,19 @@ public class RepositoryBase {
     }
 
     public void checkoutBranch(Branch b) {
+        switchBranchStatus(b);
         checkoutCommit(b.head);
     }
 
     public void checkoutCommit(Commit c) {
-        switchBranchStatus(c.branch);
-        //System.out.println("Checking out commit:");
-        //c.printCommit();
+        Status s = new Status(this);
+        s.checkFileStatus(c);
+        for (File file: head.getFiles()) {
+            restrictedDelete(file);
+        }
         for (File file: c.getFiles()) {
+            exitOnCondition(s.untrackedFile.contains(file) && differs(c, file),
+                    "There is an untracked file in the way; delete it, or add and commit it first.");
             checkoutFileInCommit(c, file);
         }
         updateHead(c);
@@ -268,22 +274,17 @@ public class RepositoryBase {
         blob.recoverFile();
     }
 
-    public void branch(String branch) {
+    public void branch(String branchName) {
         for (Branch b: branches) {
-            if (b.name.equals(branch)) {
-                throw new GitletException("Branch " + b.name + " already exists.");
-            }
+            exitOnCondition(b.name.equals(branchName), "A branch with that name already exists.");
         }
-        currentBranch = new Branch(branch, head);
-        switchBranchStatus(currentBranch);
-        branches.add(currentBranch);
+        branches.add(new Branch(branchName, head));
     }
 
     public void rmBranch(String branch) {
         Branch target = getBranch(branch);
-        if (target == null) {
-            throw new GitletException("Branch " + branch + " not found.");
-        }
+        exitOnCondition(target == null, "A branch with that name does not exist.");
+        exitOnCondition(target.equals(currentBranch), "Cannot remove the current branch.");
         branches.remove(target);
     }
 
