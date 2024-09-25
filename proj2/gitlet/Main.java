@@ -87,7 +87,7 @@ public class Main {
                     repo.pull(args[1], args[2]);
                     break;
                 case "fetch":
-                    repo.checkoutBranch(repo.fetch(args[1], args[2]));
+                    repo.fetch(args[1], args[2]);
                     break;
                 case "push":
                     repo.push(args[1], args[2]);

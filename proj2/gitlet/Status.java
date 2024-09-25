@@ -66,7 +66,7 @@ public class Status implements Serializable {
             System.out.println(f.getName() + " (modified)");
         }
         for (File f: removedFile) {
-            System.out.println(f.getName() + " (removed)");
+            System.out.println(f.getName() + " (deleted)");
         }
         System.out.println("\n=== Untracked Files ===");
         for (File f: untrackedFile) {

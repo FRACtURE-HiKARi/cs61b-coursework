@@ -384,11 +384,12 @@ public class RepositoryBase {
     }
 
     public void addRemote(String name, String destination) {
+        exitOnCondition(remoteRepos.containsKey(name), "A remote with that name already exists.");
         remoteRepos.put(name, join(CWD, destination));
     }
 
     public void rmRemote(String name) {
-        remoteRepos.remove(name);
+        exitOnCondition(remoteRepos.remove(name) == null, "A remote with that name does not exist.");
     }
 
     public Branch addNewBranch(Branch remoteBranch) {
@@ -465,8 +466,7 @@ public class RepositoryBase {
 
     public RepositoryBase getRemote(String remoteName) {
         LocalRemoteRepo remoteRepo = new LocalRemoteRepo(remoteRepos.get(remoteName));
-        if (!remoteRepo.GITLET_DIR.exists())
-            throw new GitletException("Remote repository does not exist");
+        exitOnCondition(!remoteRepo.GITLET_DIR.exists(), "Remote directory not found.");
         return remoteRepo;
     }
 

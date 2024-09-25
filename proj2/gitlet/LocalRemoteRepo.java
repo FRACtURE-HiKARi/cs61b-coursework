@@ -7,6 +7,9 @@ public class LocalRemoteRepo extends RepositoryBase{
     public LocalRemoteRepo(File CWD) {
         super();
         assert CWD != null;
+        if (CWD.getName().equals(".gitlet")) {
+            CWD = new File(CWD.getParent());
+        }
         super.CWD = CWD;
         super.GITLET_DIR = Utils.join(CWD, ".gitlet");
         super.GITLET_FILE = Utils.join(GITLET_DIR, ".gitlet");

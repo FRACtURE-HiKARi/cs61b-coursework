@@ -1,7 +1,7 @@
 package gitlet;
 
 import java.io.File;
-import java.util.*;
+import static gitlet.Utils.exitOnCondition;
 
 public class Repository extends RepositoryBase{
     public static File CWD = new File(System.getProperty("user.dir"));
@@ -36,9 +36,8 @@ public class Repository extends RepositoryBase{
     public Branch fetch(String remoteName, String branchName) {
         RepositoryBase remoteRepo = getRemote(remoteName);
         Branch remoteBranch = remoteRepo.getBranch(branchName);
-        if (remoteBranch == null) {
-            throw new GitletException("Branch " + branchName + " in remote " + remoteName + " not found.");
-        }
+        exitOnCondition(remoteBranch == null, "That remote does not have that branch.");
+        remoteBranch.rename(remoteName + "/" + branchName);
         return addNewBranch(remoteBranch);
     }
 
@@ -56,6 +55,16 @@ public class Repository extends RepositoryBase{
              throw new GitletException("Branch " + branchName + " not found.");
         }
         RepositoryBase remoteRepo = getRemote(remoteName);
+        Branch remoteBranch = remoteRepo.getBranch(branchName);
+        if (remoteBranch != null) {
+            exitOnCondition(remoteBranch.containsCommit(b.head) ||
+                            (
+                                remoteBranch.name.equals(b.name) &&
+                                !remoteBranch.head.equals(b.head) &&
+                                !b.containsCommit(remoteBranch.head)
+                            )
+                    , "Please pull down remote changes before pushing.");
+        }
         remoteRepo.checkoutBranch(remoteRepo.addNewBranch(b));
         remoteRepo.saveState();
     }
