@@ -17,7 +17,7 @@ public class Main {
     public static void main(String[] args) {
         // TODO: what if args is empty?
         if (args.length == 0) {
-            printUsage();
+            System.out.println("Please enter a command.");
             System.exit(0);
         }
 
@@ -26,8 +26,10 @@ public class Main {
         if (firstArg.equals("init")) {
             repo.init();
         } else {
-            if (!Repository.GITLET_FILE.exists())
-                throw new GitletException("Current repo is not under version control.");
+            if (!Repository.GITLET_FILE.exists()) {
+                System.out.println("Not in an initialized Gitlet directory.");
+                System.exit(0);
+            }
             switch (firstArg) {
                 case "add":
                     repo.add(args[1]);
@@ -94,8 +96,8 @@ public class Main {
                     repo.debug();
                     break;
                 default:
-                    System.out.printf("BadUsage %s.\n", firstArg);
-                    printUsage();
+                    System.out.println("No command with that name exists.");
+                    System.exit(0);
             }
             // TODO: FILL THE REST IN
         }

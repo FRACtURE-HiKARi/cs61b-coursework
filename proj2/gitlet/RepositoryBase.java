@@ -296,10 +296,9 @@ public class RepositoryBase {
 
     public void reset(String commitID) {
         Commit c = getCommit(commitID);
-        if (c != null)
-            checkoutCommit(c);
-        else
-            throw new GitletException("Commit " + commitID + " not found.");
+        exitOnCondition(c == null, "No commit with that id exists.");
+        stagedFiles.clear();
+        checkoutCommit(c);
     }
 
     public void merge(String branch) {
@@ -311,6 +310,12 @@ public class RepositoryBase {
 
     public void merge(Branch main, Branch other) {
         exitOnCondition(Objects.equals(main, other), "Cannot merge a branch with itself.");
+        if(main.containsCommit(other.head)) {
+            System.out.println("Given branch is an ancestor of the current branch.");
+        }
+        if (other.containsCommit(main.head)) {
+            System.out.println("Current branch fast-forwarded.");
+        }
         Status s = new Status(this, main.head);
         exitOnCondition(!s.untrackedFile.isEmpty(),
                 "There is an untracked file in the way; delete it, or add and commit it first.");
@@ -330,6 +335,7 @@ public class RepositoryBase {
                     ) {
                         checkoutFileInCommit(other.head, file);
                         add(file);
+                        continue;
                     }
                     // Case 2 stays untouched
                     else if (notModifedBetweenCommits(file, other.head, start)){

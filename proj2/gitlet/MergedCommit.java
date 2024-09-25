@@ -16,9 +16,9 @@ public class MergedCommit extends Commit {
             Commit mergedParent,
             Branch branch,
             File CWD) {
-        super(message, author, commitDate, directParent, branch, CWD);
-        files.putAll(mergedParent.files);
-        this.directParent = directParent;
+        super(message, author, commitDate, mergedParent, branch, CWD);
+        files.putAll(directParent.files);
+        this.parent = this.directParent = directParent;
         this.mergedParent = mergedParent;
         if (directParent.height < mergedParent.height) {
             this.height = mergedParent.height + 1;
