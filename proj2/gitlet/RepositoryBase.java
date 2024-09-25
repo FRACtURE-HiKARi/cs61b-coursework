@@ -234,8 +234,10 @@ public class RepositoryBase {
 
     public void checkout(String commitID, String fileName) {
         Commit c = getCommit(commitID);
-        if (c != null && c.contains(join(CWD, fileName))) {
+        exitOnCondition(c == null, "No commit with that id exists.");
+        if (c.contains(join(CWD, fileName))) {
             checkoutFileInCommit(c, join(CWD, fileName));
+            return;
         }
         exitOnCondition(true, "File does not exist in that commit.");
     }
@@ -308,12 +310,17 @@ public class RepositoryBase {
     }
 
     public void merge(Branch a, Branch b) {
-        if (Objects.equals(a, b)) return;
-        Status currentStatus = new Status(this, a.head);
-        if (!currentStatus.modifiedFile.isEmpty() && !currentStatus.stagedFiles.isEmpty())
-            throw new GitletException("Working directory not clean. Make commit first.");
+        exitOnCondition(Objects.equals(a, b), "Cannot merge a branch with itself.");
+        Status s = new Status(this, a.head);
+        exitOnCondition(!s.untrackedFile.isEmpty(),
+                "There is an untracked file in the way; delete it, or add and commit it first.");
+        exitOnCondition(!s.stagedFiles.isEmpty(), "You have uncommitted changes.");
+
         Commit start = getCommonParent(b.head, a.head);
-        for (File file: listFiles(CWD)) {
+        Set<File> filesToCheck = new HashSet<>();
+        filesToCheck.addAll(a.head.getFiles());
+        filesToCheck.addAll(b.head.getFiles());
+        for (File file: filesToCheck) {
             if (a.head.contains(file) && b.head.contains(file)) {
                 if (start.contains(file)) {
                     // Case 1
@@ -345,9 +352,12 @@ public class RepositoryBase {
                     add(file);
                 }
                 // Case 7 here
+                else {
+                    stagedFiles.put(file, FileStatus.Removed);
+                }
             }
         }
-        String msg = "Merging commits " + a.head.getHash().substring(0, 7) + " and " + b.head.getHash().substring(0, 7);
+        String msg = "Merge " + b.name + " into " + a.name + ".";
         makeMergeCommit(msg, "61b-student", b.head);
     }
 
