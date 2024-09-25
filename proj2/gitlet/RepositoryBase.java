@@ -309,46 +309,46 @@ public class RepositoryBase {
         checkoutBranch(currentBranch);
     }
 
-    public void merge(Branch a, Branch b) {
-        exitOnCondition(Objects.equals(a, b), "Cannot merge a branch with itself.");
-        Status s = new Status(this, a.head);
+    public void merge(Branch main, Branch other) {
+        exitOnCondition(Objects.equals(main, other), "Cannot merge a branch with itself.");
+        Status s = new Status(this, main.head);
         exitOnCondition(!s.untrackedFile.isEmpty(),
                 "There is an untracked file in the way; delete it, or add and commit it first.");
         exitOnCondition(!s.stagedFiles.isEmpty(), "You have uncommitted changes.");
 
-        Commit start = getCommonParent(b.head, a.head);
+        Commit start = getCommonParent(other.head, main.head);
         Set<File> filesToCheck = new HashSet<>();
-        filesToCheck.addAll(a.head.getFiles());
-        filesToCheck.addAll(b.head.getFiles());
+        filesToCheck.addAll(main.head.getFiles());
+        filesToCheck.addAll(other.head.getFiles());
         for (File file: filesToCheck) {
-            if (a.head.contains(file) && b.head.contains(file)) {
+            if (main.head.contains(file) && other.head.contains(file)) {
                 if (start.contains(file)) {
                     // Case 1
                     if (
-                            notModifedBetweenCommits(file, a.head, start) &&
-                                    !notModifedBetweenCommits(file, b.head, start)
+                            notModifedBetweenCommits(file, main.head, start) &&
+                                    !notModifedBetweenCommits(file, other.head, start)
                     ) {
-                        checkoutFileInCommit(b.head, file);
+                        checkoutFileInCommit(other.head, file);
                         add(file);
                     }
                     // Case 2 stays untouched
                     continue;
                     // Case 8
                 }
-                if (!notModifedBetweenCommits(file, b.head, a.head)) {
-                    mergeConflictFiles(file, a.head, b.head);
+                if (!notModifedBetweenCommits(file, other.head, main.head)) {
+                    mergeConflictFiles(file, main.head, other.head);
                     add(file);
                 }
-            } else if (a.head.contains(file)) {
+            } else if (main.head.contains(file)) {
                 // Case 4 here
                 // Case 6
-                if (notModifedBetweenCommits(file, a.head, start)) {
+                if (notModifedBetweenCommits(file, main.head, start)) {
                     remove(file);
                 }
-            } else if (b.head.contains(file)) {
+            } else if (other.head.contains(file)) {
                 // Case 5
                 if (!start.contains(file)) {
-                    checkoutFileInCommit(b.head, file);
+                    checkoutFileInCommit(other.head, file);
                     add(file);
                 }
                 // Case 7 here
@@ -357,8 +357,8 @@ public class RepositoryBase {
                 }
             }
         }
-        String msg = "Merge " + b.name + " into " + a.name + ".";
-        makeMergeCommit(msg, "61b-student", b.head);
+        String msg = "Merged " + other.name + " into " + main.name + ".";
+        makeMergeCommit(msg, "61b-student", other.head);
     }
 
     public void merge(Branch branch) {
