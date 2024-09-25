@@ -24,7 +24,9 @@ public class Commit implements Serializable {
      * variable is used. We've provided one example for `message`.
      */
 
-    /** The message of this Commit. */
+    /**
+     * The message of this Commit.
+     */
     String message;
     String author;
     //private String email;
@@ -51,7 +53,7 @@ public class Commit implements Serializable {
         if (parent != null) {
             files.putAll(parent.files);
             height = parent.height + 1;
-        }else {
+        } else {
             height = 0;
         }
     }
@@ -104,13 +106,17 @@ public class Commit implements Serializable {
         return SHA1;
     }
 
-    public Commit getParent() { return parent; }
+    public Commit getParent() {
+        return parent;
+    }
 
-    public String getMessage() { return message; }
+    public String getMessage() {
+        return message;
+    }
 
     public Set<File> getFiles() {
         Set<File> files = new HashSet<>();
-        for (String name: this.files.keySet()) {
+        for (String name : this.files.keySet()) {
             if (this.files.get(name) instanceof RemoveBlob) {
                 continue;
             }
@@ -119,7 +125,9 @@ public class Commit implements Serializable {
         return files;
     }
 
-    public Date getDate() { return commitDate; }
+    public Date getDate() {
+        return commitDate;
+    }
 
     @Override
     public int hashCode() {
@@ -135,10 +143,10 @@ public class Commit implements Serializable {
 
     public void printCommit() {
         System.out.print(
-                  "===\n"
-                + "commit " + getHash() + "\n"
-                + "Date: " + dateFormat.format(commitDate) + "\n"
-                + message + "\n"
+                "===\n"
+                        + "commit " + getHash() + "\n"
+                        + "Date: " + dateFormat.format(commitDate) + "\n"
+                        + message + "\n"
         );
         //printBlobs();
         System.out.println();
@@ -154,7 +162,17 @@ public class Commit implements Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof Commit) {
             return hashCode() == ((Commit) obj).hashCode();
-        }
-        else return false;
+        } else return false;
     }
+
+    public Collection<Commit> getAllParents() {
+        Collection<Commit> c = new HashSet<>();
+        c.add(this.parent);
+        return c;
+    }
+
+    public int height() {
+        return height;
+    }
+
 }

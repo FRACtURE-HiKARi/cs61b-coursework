@@ -49,6 +49,9 @@ public class BlobContainer {
     }
 
     public String getContentsAsString(Blob blob) {
+        if (blob == null) {
+            return "";
+        }
         return new String(blob.getContents(), StandardCharsets.UTF_8);
     }
 

@@ -304,7 +304,7 @@ public class RepositoryBase {
 
     public void merge(String branch) {
         Branch target = getBranch(branch);
-        if (target == null) throw new GitletException("Branch " + branch + " not found.");
+        exitOnCondition(target == null, "A branch with that name does not exist.");
         merge(target);
         checkoutBranch(currentBranch);
     }
@@ -346,6 +346,10 @@ public class RepositoryBase {
                 // Case 6
                 if (notModifedBetweenCommits(file, main.head, start)) {
                     remove(file);
+                } else if (start.contains(file)){
+                    // case 8
+                    mergeConflictFiles(file, main.head, other.head);
+                    add(file);
                 }
             } else if (other.head.contains(file)) {
                 // Case 5
@@ -355,7 +359,13 @@ public class RepositoryBase {
                 }
                 // Case 7 here
                 else {
-                    stagedFiles.put(file, FileStatus.Removed);
+                    if (notModifedBetweenCommits(file, other.head, start)){
+                        stagedFiles.put(file, FileStatus.Removed);
+                    } else {
+                        // case 8
+                        mergeConflictFiles(file, main.head, other.head);
+                        add(file);
+                    }
                 }
             }
         }
@@ -471,10 +481,16 @@ public class RepositoryBase {
     }
 
     private boolean notModifedBetweenCommits(File f, Commit a, Commit b) {
-        if (Objects.equals(a, b)) return true;
-        else return a.contains(f)
-                && b.contains(f)
-                && sameBlob(a.getBlob(f), b.getBlob(f));
+        boolean aContains = a.contains(f);
+        boolean bContains = b.contains(f);
+        if (Objects.equals(a, b) || !(aContains || bContains)) {
+            return true;
+        } else if (aContains ^ bContains) {
+            return false;
+        }
+        else {
+            return sameBlob(a.getBlob(f), b.getBlob(f));
+        }
     }
 
     private static boolean checkDifference(Commit c, File file, byte[] data) {
@@ -494,21 +510,19 @@ public class RepositoryBase {
     }
 
     public Commit getCommonParent(Commit c1, Commit c2) {
-        if (c1.height > c2.height) {
-            while (c1.height > c2.height) {
-                c1 = c1.parent;
+        PriorityQueue<Commit> queue = new PriorityQueue<>(Comparator.comparing(Commit::height).reversed());
+        queue.add(c1);
+        queue.add(c2);
+        Commit c = null;
+        while (!queue.isEmpty()) {
+            c = queue.remove();
+            if (queue.contains(c)) {
+                return c;
             }
+            queue.addAll(c.getAllParents());
         }
-        else if (c1.height < c2.height) {
-            while (c1.height < c2.height) {
-                c2 = c2.parent;
-            }
-        }
-        while (c1 != c2) {
-            c1 = c1.parent;
-            c2 = c2.parent;
-        }
-        return c1;
+        // it must be the commit at height 0
+        return c;
     }
 
     public Branch getBranch(String branch) {

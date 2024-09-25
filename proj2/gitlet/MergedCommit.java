@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Date;
 
 public class MergedCommit extends Commit {
@@ -19,6 +20,9 @@ public class MergedCommit extends Commit {
         files.putAll(mergedParent.files);
         this.directParent = directParent;
         this.mergedParent = mergedParent;
+        if (directParent.height < mergedParent.height) {
+            this.height = mergedParent.height + 1;
+        }
     }
 
     @Override
@@ -28,10 +32,16 @@ public class MergedCommit extends Commit {
                         + "commit " + getHash() + "\n"
                         + "Merge: " + directParent.getHash().substring(0, 7) + " "
                         + mergedParent.getHash().substring(0, 7) + "\n"
-                        + "Date: " + commitDate.toString() + "\n"
+                        + "Date: " + dateFormat.format(commitDate) + "\n"
                         + message + "\n"
                         + "\n"
         );
     }
 
+    @Override
+    public Collection<Commit> getAllParents(){
+        Collection<Commit> c = super.getAllParents();
+        c.add(mergedParent);
+        return c;
+    }
 }

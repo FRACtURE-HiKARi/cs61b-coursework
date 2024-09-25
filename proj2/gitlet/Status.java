@@ -44,7 +44,12 @@ public class Status implements Serializable {
 
     public void printStatus() {
         System.out.println("=== Branches ===");
-        for (Branch b : branches) b.printBranch();
+        this.branch.printBranch();
+        for (Branch b : branches) {
+            if (!b.isCurrentBranch){
+                b.printBranch();
+            }
+        }
         System.out.println("\n=== Staged Files ===");
         for (File f : stagedFiles.keySet())
             if (!stagedFiles.get(f).equals(FileStatus.Removed)) {
