@@ -21,7 +21,6 @@ public class GetEnvironmentVariables {
         String linuxSource = "source ~/.bashrc";
 
         String yourOS = System.getProperty("os.name").toLowerCase();
-
         String repo = null;
         String snaps = null;
         String source = null;
